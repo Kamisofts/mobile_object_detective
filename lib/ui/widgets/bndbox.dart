@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'models.dart';
+import '../../core/models/models.dart';
 
 class BndBox extends StatelessWidget {
   final List<dynamic> results;
@@ -10,11 +10,13 @@ class BndBox extends StatelessWidget {
   final double screenW;
   final String model;
 
-  const BndBox(this.results, this.previewH, this.previewW, this.screenH, this.screenW,
-      this.model, {super.key});
+  const BndBox(this.results, this.previewH, this.previewW, this.screenH,
+      this.screenW, this.model,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
+    print(results.toString());
     List<Widget> renderBoxes() {
       return results.map((re) {
         var x0 = re["rect"]["x"];
@@ -43,6 +45,7 @@ class BndBox extends StatelessWidget {
           if (y0 < difH / 2) h -= (difH / 2 - y0) * scaleH;
         }
 
+        double perVal = (re["confidenceInClass"] * 100);
         return Positioned(
           left: math.max(0, x),
           top: math.max(0, y),
@@ -52,14 +55,22 @@ class BndBox extends StatelessWidget {
             padding: const EdgeInsets.only(top: 5.0, left: 5.0),
             decoration: BoxDecoration(
               border: Border.all(
-                color: const Color.fromRGBO(247, 17, 17, 1),
+                color: perVal < 50
+                    ? const Color.fromRGBO(247, 17, 17, 1)
+                    : perVal < 75
+                        ? const Color.fromRGBO(247, 247, 27, 1)
+                        : const Color.fromRGBO(17, 247, 17, 1),
                 width: 3.0,
               ),
             ),
             child: Text(
               "${re["detectedClass"]} ${(re["confidenceInClass"] * 100).toStringAsFixed(0)}%",
-              style: const TextStyle(
-                color: Color.fromRGBO(247, 17, 17, 1),
+              style: TextStyle(
+                color: perVal < 50
+                    ? const Color.fromRGBO(247, 17, 17, 1)
+                    : perVal < 75
+                        ? const Color.fromRGBO(247, 247, 27, 1)
+                        : const Color.fromRGBO(17, 247, 17, 1),
                 fontSize: 14.0,
                 fontWeight: FontWeight.bold,
               ),
@@ -136,7 +147,9 @@ class BndBox extends StatelessWidget {
     return Stack(
       children: model == mobilenet
           ? renderStrings()
-          : model == posenet ? renderKeypoints() : renderBoxes(),
+          : model == posenet
+              ? renderKeypoints()
+              : renderBoxes(),
     );
   }
 }

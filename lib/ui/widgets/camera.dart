@@ -6,24 +6,33 @@ import 'package:flutter_tflite/flutter_tflite.dart';
 
 import 'dart:math' as math;
 
-import 'models.dart';
+import '../../core/controllers/camera_controller.dart';
+import '../../core/utils/injections.dart';
+import '../../core/models/models.dart';
 
 typedef Callback = void Function(List<dynamic> list, int h, int w);
 
 class Camera extends StatefulWidget {
+
+  final int cameraVal;
+
   final List<CameraDescription> cameras;
   final Callback setRecognitions;
   final String model;
 
-  const Camera(this.cameras, this.model, this.setRecognitions, {super.key});
+  const Camera(this.cameras, this.model, this.setRecognitions ,this.cameraVal,{super.key });
 
   @override
   State<Camera> createState() => _CameraState();
 }
 
 class _CameraState extends State<Camera> {
+  final cameraController = sl<DetectController>();
+
   late CameraController controller;
   bool isDetecting = false;
+
+
 
   @override
   void initState() {
@@ -31,9 +40,10 @@ class _CameraState extends State<Camera> {
 
     if (widget.cameras.isEmpty) {
       log('No camera is found');
-    } else {
+    } 
+    else {
       controller = CameraController(
-        widget.cameras[0],
+        widget.cameras[ cameraController.cameraVal.value],
         ResolutionPreset.high,
       );
       controller.initialize().then((_) {
@@ -119,7 +129,7 @@ class _CameraState extends State<Camera> {
       return Container();
     }
 
-    var tmp = MediaQuery.of(context).size;
+    var tmp = MediaQuery.sizeOf(context);
     var screenH = math.max(tmp.height, tmp.width);
     var screenW = math.min(tmp.height, tmp.width);
     tmp = controller.value.previewSize!;

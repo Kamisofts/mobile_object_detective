@@ -3,9 +3,12 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_tflite/flutter_tflite.dart';
+import 'package:get/get.dart';
 
+import '../../core/controllers/camera_controller.dart';
+import '../../core/utils/injections.dart';
 import 'detect_screen.dart';
-import 'models.dart';
+import '../../core/models/models.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,12 +18,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late final List<CameraDescription> cameras;
+  final cameraController = sl<DetectController>();
+
 
   @override
   Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
-    await setupCameras();
+
   }
 
   loadModel(model) async {
@@ -55,18 +59,12 @@ class _HomePageState extends State<HomePage> {
   onSelect(model) {
     loadModel(model);
     final route = MaterialPageRoute(builder: (context) {
-      return DetectScreen(cameras: cameras, model: model);
+      return DetectScreen( model: model,);
     });
     Navigator.of(context).push(route);
   }
 
-  setupCameras() async {
-    try {
-      cameras = await availableCameras();
-    } on CameraException catch (e) {
-      log('Error: $e.code\nError Message: $e.message');
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +73,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+
             ElevatedButton(
               child: const Text(ssd),
               onPressed: () => onSelect(ssd),
